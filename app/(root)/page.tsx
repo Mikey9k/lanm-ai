@@ -1,0 +1,243 @@
+"use client"
+import React, { useState, useEffect, useCallback, act } from 'react'
+import DrawingCanvas from '@/components/shared/DrawingCanvas'
+import QuoteGenerator from '@/components/shared/QuoteGenerator'
+import PerspectiveSelector from '@/components/shared/PerspectiveSelector'
+import StyleSelector from '@/components/shared/StyleSelector'
+import SummaryToggle from '@/components/shared/SummaryToggle'
+import ToneSelector from '@/components/shared/ToneSelector'
+import ShareDownloadButtons from '@/components/shared/ShareDownloadButtons'
+import ImageButtons from '@/components/shared/ImageButtons'
+import FeedbackBar from '@/components/shared/FeedbackBar'
+import NavBar from '@/components/shared/NavBar'
+
+
+import { Card } from '@/components/ui/card'
+
+
+interface TemplateData {
+  image: string
+  text: string
+  model: string
+}
+
+interface Templates {
+  // You can keep adding templates here as needed
+  bridge?: TemplateData
+  braid?: TemplateData
+  fish?: TemplateData
+  newton?: TemplateData
+  // ... if you add more templates in the future
+}
+
+const Home = () => {
+  const [quote, setQuote] = useState('')
+  const [activePerspective, setActivePerspective] = useState('')
+  const [activeTone, setActiveTone] = useState('balance')
+  const [activeStyle, setActiveStyle] = useState('style1')
+  const [activeTemplate, setActiveTemplate] = useState(1)
+
+  const [generatingTheme, setGeneratingTheme] = useState(false)
+  const [generatingImg, setGeneratingImg] = useState(false)
+
+  const [showSummary, setShowSummary] = useState(false)
+
+  const [perspectives, setPerspectives] = useState([
+    { id: 1, label: 'Discipline as the Key Connector' },
+    { id: 2, label: 'Goals vs. Accomplishments' },
+    { id: 3, label: 'Discipline as a Habit. Not Motivation' }
+  ])
+
+  // This state will hold your various templates (e.g., "bridge", "braid", etc.),
+  // each storing image, text, and model.
+  const [templates, setTemplates] = useState<Templates>({})
+
+  // 1) If you want to dynamically generate a theme from the user’s quote
+  const generateTheme = useCallback(async () => {
+    console.log("Generating Theme");
+    if (quote) {
+      try {
+        setGeneratingTheme(true);
+        const response = await fetch('http://localhost:3333/api/v1/dalle/theme', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt: quote }),
+        });
+        const data = await response.json();
+        setPerspectives([
+          { id: 1, label: data.theme1 },
+          { id: 2, label: data.theme2 },
+          { id: 3, label: data.theme3 }
+        ])
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setGeneratingTheme(false);
+      }
+    }
+  }, [quote])
+
+  useEffect(() => {
+    if (generatingTheme) {
+      generateTheme()
+    }
+  }, [generatingTheme, quote, generateTheme])
+
+  // 2) The function that calls your back end to generate images (and text/model, too)
+  const generateImage = useCallback(async () => {
+    console.log("Generating Images...");
+    if (!quote) return
+
+    try {
+      setGeneratingImg(true)
+      const response = await fetch('http://localhost:3333/api/v1/dalle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          prompt: quote,
+          // If you have more fields, pass them along below:
+          theme: activePerspective,
+          color: "black",
+          formality: activeTone,
+          style: activeStyle,
+          isQuoteDisplayed: true,
+          isSummaryDisplayed: true
+        }),  
+      })
+      const data = await response.json()
+
+      /*
+        Instead of manually setting every single field in state,
+        you can store them in a “templates” object keyed by template name.
+        That way, as you add more templates on the backend (like “bridge”, “braid”,
+        “fish”, “newton”, etc.), you simply update the object accordingly.
+      */
+      setTemplates({
+        ...templates,
+        bridge: {
+          image: `data:image/jpeg;base64,${data.photo}`,  // or data.bridge
+          text: data.textBridge,
+          model: data.modelBridge
+        },
+        braid: {
+          image: `data:image/jpeg;base64,${data.braid}`,
+          text: data.textBraid,
+          model: data.modelBraid
+        },
+        fish: {
+          image: `data:image/jpeg;base64,${data.fish}`,
+          text: data.textFish,
+          model: data.modelFish
+        },
+        newton: {
+          image: `data:image/jpeg;base64,${data.newton}`,
+          text: data.textNewton,
+          model: data.modelNewton
+        }
+      })
+
+    } catch (error) {
+      console.error('Error generating images:', error);
+    } finally {
+      setGeneratingImg(false)
+    }
+  }, [quote, templates])
+
+  const handlePerspectiveChange = (newPerspective) => {
+    setActivePerspective(newPerspective);
+    generateImage(newPerspective);
+  };
+
+  return (
+
+    <div>
+      <NavBar />
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-5 p-8">
+
+        {/* Left Column: Controls */}
+        <Card className="space-y-4 md:col-span-2 p-4" style={{ backgroundColor: '#E6E6FA' }}>
+          <QuoteGenerator
+            quote={quote}
+            setQuote={setQuote}
+            generatingTheme={generatingTheme}
+            setGeneratingTheme={setGeneratingTheme}
+          />
+
+          <PerspectiveSelector
+            activePerspective={activePerspective}
+            setActivePerspective={handlePerspectiveChange}
+            perspectives={perspectives}
+          />
+
+          <ToneSelector
+            activeTone={activeTone}
+            setActiveTone={setActiveTone}
+          />
+
+          <StyleSelector
+            activeStyle={activeStyle as React.CSSProperties}
+            setActiveStyle={setActiveStyle}
+          />
+
+          {/* Example button to trigger generateImage */}
+          {/* Button to trigger image generation */}
+          {/* <button
+            onClick={generateImage}
+            disabled={generatingImg}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            {generatingImg ? "Generating..." : "Generate Image"}
+          </button> */}
+        </Card>
+
+        {/* Right Column: Canvas + Actions */}
+        <div className="md:col-span-3 space-y-4">
+          {/* Put DrawingCanvas and ImageButtons side by side */}
+          <div className="flex gap-4">
+            <DrawingCanvas
+              showSummary={showSummary}
+              setShowSummary={setShowSummary}
+              showReloadButton={true}
+              onReload={() => {
+                // Custom logic, e.g., clearing canvas, re-initializing data, etc.
+                console.log("Reloading canvas...")
+              }}
+            />
+            <ImageButtons 
+              activeTemplate={activeTemplate}
+              setActiveTemplate={setActiveTemplate}
+            />
+          </div>
+
+
+          <ShareDownloadButtons />
+
+          {/* Example: Display the returned images/text */}
+          {/* {Object.keys(templates).map((key) => {
+            const template = templates[key as keyof Templates]
+            if (!template) return null
+
+            return (
+              <div key={key} className="border p-4 my-2">
+                <h2 className="text-lg font-bold">{key}</h2>
+                <img src={template.image} alt={`${key} template`} />
+                <p>{template.text}</p>
+                <p>{template.model}</p>
+              </div>
+            )
+          })} */}
+        </div>
+
+        
+      </div>
+      <FeedbackBar />
+    </div>
+  )
+}
+
+export default Home
