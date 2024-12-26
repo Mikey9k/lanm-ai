@@ -1,7 +1,18 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 
-const PerspectiveSelector = ({ activePerspective, setActivePerspective, perspectives }) => {
+interface Perspective {
+  id: string;
+  label: string;
+}
+
+interface PerspectiveSelectorProps {
+  activePerspective: string;
+  setActivePerspective: (perspective: string) => void;
+  perspectives: Perspective[];
+}
+
+const PerspectiveSelector: React.FC<PerspectiveSelectorProps> = ({ activePerspective, setActivePerspective, perspectives }) => {
   return (
     <div className="space-y-2">
       <h2 className="font-semibold mb-0">Perspective</h2>

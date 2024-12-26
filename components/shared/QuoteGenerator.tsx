@@ -3,12 +3,17 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'           // Adjust if your Button is in a different path
 import { Textarea } from '@/components/ui/textarea'       // Adjust if your Textarea is in a different path
-import { useState } from 'react'
 
-const QuoteGenerator = ({ quote, setQuote, generatingTheme, setGeneratingTheme }) => {
+interface QuoteGeneratorProps {
+  quote: string;
+  setQuote: (quote: string) => void;
+  generatingTheme: boolean;
+  setGeneratingTheme: (generating: boolean) => void;
+}
 
+const QuoteGenerator: React.FC<QuoteGeneratorProps> = ({ quote, setQuote, generatingTheme, setGeneratingTheme }) => {
 
-  const handleGenerate = (event) => {
+  const handleGenerate = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
 
     // Implementation for generating or updating the quote

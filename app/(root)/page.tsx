@@ -1,10 +1,9 @@
 "use client"
-import React, { useState, useEffect, useCallback, act } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import DrawingCanvas from '@/components/shared/DrawingCanvas'
 import QuoteGenerator from '@/components/shared/QuoteGenerator'
 import PerspectiveSelector from '@/components/shared/PerspectiveSelector'
 import StyleSelector from '@/components/shared/StyleSelector'
-import SummaryToggle from '@/components/shared/SummaryToggle'
 import ToneSelector from '@/components/shared/ToneSelector'
 import ShareDownloadButtons from '@/components/shared/ShareDownloadButtons'
 import ImageButtons from '@/components/shared/ImageButtons'
@@ -43,9 +42,9 @@ const Home = () => {
   const [showSummary, setShowSummary] = useState(false)
 
   const [perspectives, setPerspectives] = useState([
-    { id: 1, label: 'Discipline as the Key Connector' },
-    { id: 2, label: 'Goals vs. Accomplishments' },
-    { id: 3, label: 'Discipline as a Habit. Not Motivation' }
+    { id: '1', label: 'Discipline as the Key Connector' },
+    { id: '2', label: 'Goals vs. Accomplishments' },
+    { id: '3', label: 'Discipline as a Habit. Not Motivation' }
   ])
 
   // This state will hold your various templates (e.g., "bridge", "braid", etc.),
@@ -67,9 +66,9 @@ const Home = () => {
         });
         const data = await response.json();
         setPerspectives([
-          { id: 1, label: data.theme1 },
-          { id: 2, label: data.theme2 },
-          { id: 3, label: data.theme3 }
+          { id: '1', label: data.theme1 },
+          { id: '2', label: data.theme2 },
+          { id: '3', label: data.theme3 }
         ])
       } catch (error) {
         console.error(error);
@@ -144,12 +143,13 @@ const Home = () => {
       console.error('Error generating images:', error);
     } finally {
       setGeneratingImg(false)
+      console.log(generatingImg)
     }
-  }, [quote, templates])
+  }, [quote, templates, activePerspective, activeStyle, activeTone, generatingImg])
 
-  const handlePerspectiveChange = (newPerspective) => {
+  const handlePerspectiveChange = (newPerspective: string) => {
     setActivePerspective(newPerspective);
-    generateImage(newPerspective);
+    generateImage();
   };
 
   return (
@@ -180,7 +180,7 @@ const Home = () => {
           />
 
           <StyleSelector
-            activeStyle={activeStyle as React.CSSProperties}
+            activeStyle={activeStyle}
             setActiveStyle={setActiveStyle}
           />
 

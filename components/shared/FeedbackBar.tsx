@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Heart, Star } from 'lucide-react'
+import { Heart } from 'lucide-react'
 
 const FeedbackBar = () => {
   const [visualRating, setVisualRating] = useState<number>(0)

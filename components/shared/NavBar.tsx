@@ -1,15 +1,14 @@
-import React, { useState } from "react"
+import React from "react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react"
 import { navLinks } from "@/constants"
 import { usePathname } from "next/navigation"
-import { Sheet, SheetTrigger, SheetContent, SheetClose, SheetTitle } from "@/components/ui/sheet"
+import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet"
 
 const NavBar = () => {
   const pathname = usePathname();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <nav className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2">

@@ -3,7 +3,12 @@ import { Button } from '@/components/ui/button'
 
 const tones = ['Balance', 'Formal', 'Informal']
 
-const ToneSelector = ({ activeTone, setActiveTone }) => {
+interface ToneSelectorProps {
+  activeTone: string;
+  setActiveTone: (tone: string) => void;
+}
+
+const ToneSelector: React.FC<ToneSelectorProps> = ({ activeTone, setActiveTone }) => {
   return (
     <div className="space-y-2">
       <h3 className="font-semibold">Tone</h3>
