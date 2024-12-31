@@ -27,13 +27,13 @@ const NavBar = () => {
                 <div className="hidden md:flex items-center gap-6">
                 <SignedIn>
                 <ul className="navbar-nav_elements">
-                    {navLinks.slice(0, 3).map((link) => {
+                    {navLinks.slice(0, 1).map((link) => {
                     const isActive = link.route === pathname;
                     return (
                         <li
                         key={link.route}
                         className={`navbar-nav_element group ${
-                            isActive ? "bg-purple-gradient" : "text-gray-700"
+                            isActive ? "bg-purple-gradient text-white" : "text-gray-700"
                         }`}
                         >
                         <Link className="navbar-link" href={link.route}>
