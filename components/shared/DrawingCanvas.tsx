@@ -74,7 +74,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   return (
 
     <div>
-      <div className="w-[800px] image-container">
+      <div className="w-[600px] image-container">
         {/* <Image
           src="/assets/images/placeholder.png"
           alt="Placeholder"
