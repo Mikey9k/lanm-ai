@@ -3,6 +3,11 @@ import Image from 'next/image'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { dataUrl, debounce, download, getImageSize } from '@/lib/utils'
+import { CldImage, getCldImageUrl } from 'next-cloudinary'
+import { PlaceholderValue } from 'next/dist/shared/lib/get-img-props'
+
+
 
 interface DrawingCanvasProps {
   showSummary: boolean
@@ -16,6 +21,17 @@ interface DrawingCanvasProps {
    * Defaults to `window.location.reload()` if not provided.
    */
   onReload?: () => void 
+  image: {
+    width: number,
+    height: number,
+    publicId: string,
+    title: string
+  }
+  title: string
+  type: string
+  isTransforming?: boolean
+  setIsTransforming?: (value: boolean) => void
+  hasDownload?: boolean
 }
 
 const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
@@ -23,6 +39,12 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   setShowSummary,
   showReloadButton = false,
   onReload,
+  image,
+  title,
+  type,
+  isTransforming,
+  setIsTransforming,
+  hasDownload = false
 }) => {
   // Fallback reload logic if no custom handler is passed
   const handleReload = () => {
@@ -33,35 +55,113 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
     }
   }
 
+  const handleShare = () => {
+    alert(`Share logic goes here! {isTransforming: ${isTransforming}}`)
+  }
+
+  const handleDownload = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
+
+    download(getCldImageUrl({
+      width: image?.width,
+      height: image?.height,
+      src: image?.publicId,
+    }), title)
+  }
+
+  console.log(hasDownload)
+
   return (
-    <div className="w-[600px] image-container">
-      <Image
-        src="/assets/images/placeholder.png"
-        alt="Placeholder"
-        width={800}
-        height={600}
-        className="styled-image"
-      />
 
-      {/* Bottom-left controls container */}
-      <div className="bottom-left-switch flex items-center space-x-2">
-        <Switch checked={showSummary} onCheckedChange={setShowSummary} />
-        <Label htmlFor="display-quote">Display Quote</Label>
+    <div>
+      <div className="w-[800px] image-container">
+        {/* <Image
+          src="/assets/images/placeholder.png"
+          alt="Placeholder"
+          width={800}
+          height={600}
+          className="styled-image"
+        /> */}
 
-        {/* <span className="switch-label">Summary</span> */}
-      </div>
+        <div className="">
 
+          {image?.publicId ? (
+            <div className="relative">
+              <CldImage 
+                width={getImageSize(type, image, "width")}
+                height={getImageSize(type, image, "height")}
+                src={image?.publicId}
+                alt={image.title}
+                sizes={"(max-width: 767px) 100vw, 50vw"}
+                placeholder={dataUrl as PlaceholderValue}
+                className="transformed-image"
+                onLoad={() => {
+                  if (setIsTransforming) {
+                    setIsTransforming(false);
+                  }
+                }}
+                onError={() => {
+                  debounce(() => {
+                    if (setIsTransforming) {
+                      setIsTransforming(false);
+                    }
+                  }, 8000)()
+                }}
+              />
 
-      {/* Conditionally show the reload button if enabled */}
-      {showReloadButton && (
-        <div className="reload-button-container">
-          <Button variant="outline" onClick={handleReload}>
-            Reload
-          </Button>
+              {isTransforming && (
+                <div className="transforming-loader">
+                  <Image 
+                    src="/assets/icons/spinner.svg"
+                    width={50}
+                    height={50}
+                    alt="spinner"
+                  />
+                  <p className="text-white/80">Please wait...</p>
+                </div>
+              )}
+            </div>
+          ): (
+            <div className="transformed-placeholder">
+              Transformed Image
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Bottom-left controls container */}
+        <div className="bottom-left-switch flex items-center space-x-2 p-4">
+
+          <Button>
+            <Switch checked={showSummary} onCheckedChange={setShowSummary} />
+            <Label htmlFor="display-quote">Display Quote</Label>
+          </Button>
+
+          {/* <span className="switch-label">Summary</span> */}
+        </div>
+
+        {/* Conditionally show the reload button if enabled */}
+        {showReloadButton && (
+          <div className="reload-button-container m-4">
+            <Button variant="outline" onClick={handleReload}>
+              Reload
+            </Button>
+          </div>
+        )}
 
 
+
+
+      </div>
+    
+      <div className="button-group" style={{ display: 'flex', gap: '8px' }}>
+        <Button variant="secondary" onClick={handleShare}>
+          Share
+        </Button>
+        <Button variant="default" onClick={handleDownload}>
+          Download
+        </Button>
+      </div>
+    
     </div>
   )
 }

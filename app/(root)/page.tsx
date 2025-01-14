@@ -1,5 +1,4 @@
 
-import FeedbackBar from '@/components/shared/FeedbackBar'
 import TransformationForm from '@/components/shared/TransformationForm'
 import { auth } from '@clerk/nextjs/server'
 import { getUserById } from '@/lib/actions/user.actions' 
@@ -17,10 +16,12 @@ const Home = async () => {
 
     <div>
       <div>
-        <TransformationForm userId={user._id}/>
+        <TransformationForm 
+          userId={user._id}
+          creditBalance={user.creditBalance}
+        />
         
       </div>
-      <FeedbackBar />
     </div>
   )
 }

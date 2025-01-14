@@ -4,6 +4,7 @@ import {IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "@/components/ui/toaster";
 // import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 
 
@@ -57,6 +58,7 @@ export default function RootLayout({
           <main className={cn("font-IBMPlex antialiased", IBMPlex.variable)}>
             {children}
           </main>
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>
