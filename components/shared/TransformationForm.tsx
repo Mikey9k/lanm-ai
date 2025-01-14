@@ -51,7 +51,7 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
     const [quote, setQuote] = useState('')
     const [activePerspective, setActivePerspective] = useState('')
     const [activeTone, setActiveTone] = useState('balance')
-    const [activeStyle, setActiveStyle] = useState('style1')
+    const [activeStyle, setActiveStyle] = useState('sketch')
     const [activeTemplate, setActiveTemplate] = useState(1)
 
     const [generatingTheme, setGeneratingTheme] = useState(false)
@@ -192,7 +192,8 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
                 formality: activeTone,
                 style: activeStyle,
                 isQuoteDisplayed: true,
-                isSummaryDisplayed: true
+                isSummaryDisplayed: true,
+                userId,
                 }),  
             })
             const data = await response.json()
@@ -265,6 +266,8 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
             comment: ''
         });
 
+        console.log(payload);
+
         generateImage();
         
 
@@ -326,7 +329,7 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
                             console.log("Reloading canvas...")
                         }}
                         type="defaultType" // Replace "defaultType" with the appropriate type value
-                        image={{ width: 800, height: 800, publicId: "photo-1736540283135-0015de65867b_xrnlij", title: "Sample Title" }}
+                        image={{ width: 800, height: 800, publicId: userId, title: "Sample Title" }}
                         title={"hello"}
                         isTransforming={isTransforming}
                         setIsTransforming={setIsTransforming}

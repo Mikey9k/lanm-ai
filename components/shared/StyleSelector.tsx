@@ -8,7 +8,7 @@ import style2 from '../../public/styles/style2.png';
 import style3 from '../../public/styles/style3.png';
 
 const styles = [
-  { name: 'style1', img: style1 },
+  { name: 'sketch', img: style1 },
   { name: 'style2', img: style2 },
   { name: 'style3', img: style3 },
 ];

@@ -18,7 +18,7 @@ const QuoteGenerator: React.FC<QuoteGeneratorProps> = ({ quote, setQuote, genera
 
     // Implementation for generating or updating the quote
     setGeneratingTheme(true)
-    alert('Generate logic goes here!')
+    // alert('Generate logic goes here!')
   }
 
   return (
