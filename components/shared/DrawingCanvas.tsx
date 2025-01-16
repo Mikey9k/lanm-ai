@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
@@ -33,8 +33,6 @@ interface DrawingCanvasProps {
   isTransforming?: boolean
   setIsTransforming?: (value: boolean) => void
   hasDownload?: boolean
-  resetCanvas?: boolean
-  setResetCanvas?: (value: boolean) => void
 }
 
 const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
@@ -48,8 +46,6 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   isTransforming,
   setIsTransforming,
   hasDownload = false,
-  resetCanvas,
-  setResetCanvas
 }) => {
   // Fallback reload logic if no custom handler is passed
   const handleReload = () => {
@@ -74,13 +70,39 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
     }), title)
   }
 
-  console.log(`yomumma: ${resetCanvas}`)
-  const newKey = resetCanvas ? Date.now() : 'default-key';
-  console.log(`newKey: ${newKey}`)
+ 
   console.log(`publicId: ${image?.publicId}`)
   console.log(`hasDownload: ${hasDownload}`)
-  console.log(`setResetCanvas: ${setResetCanvas}`)
 
+
+  const retryCountRef = useRef(0);
+  const maxRetries = 8;
+
+  const handleError = debounce(() => {
+    if (retryCountRef.current < maxRetries) {
+      retryCountRef.current += 1;
+    }
+  }, 10000);
+
+  
+  const [showCldImage, setShowCldImage] = useState(false);
+
+  console.log(`isTransforming: ${isTransforming}`)
+
+  useEffect(() => {
+    setShowCldImage(false);
+    if (true) {
+      const timer = setTimeout(() => {
+        setShowCldImage(true);
+        console.log(`timer fired`)
+      }, 5000);
+  
+      return () => clearTimeout(timer);
+    }
+  }, [isTransforming]);
+
+
+  console.log(`showCldImage: ${showCldImage}`)
 
   return (
 
@@ -94,40 +116,25 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
           className="styled-image"
         /> */}
 
-        <div className="">
+      { !showCldImage && (
+        <p>Loading image, please wait...</p>
+      )}
 
-          {image?.publicId ? (
+        <div>
+          {image?.publicId && showCldImage ? (
             <div className="relative">
               <CldImage 
-                key={`${newKey}-${image?.publicId}`}
+                key={`${image.publicId}-${retryCountRef.current}`}
                 width={getImageSize(type, image, "width")}
                 height={getImageSize(type, image, "height")}
-                src={image?.publicId}
+                src={image.publicId}
                 alt={image.title}
-                sizes={"(max-width: 767px) 100vw, 50vw"}
+                sizes="(max-width: 767px) 100vw, 50vw"
                 placeholder={dataUrl as PlaceholderValue}
                 className="transformed-image"
-                onLoad={() => {
-                  if (setIsTransforming) {
-                    setIsTransforming(false);
-                  }
-                }}
-                onError={() => {
-                  debounce(() => {
-                    if (setIsTransforming) {
-                      setIsTransforming(false);
-                    }
-                  }, 8000)()
-                }}
+                onLoad={() => setIsTransforming?.(false)}
+                onError={handleError}
               />
-
-              <CldImage
-                src={image?.publicId}
-                alt={image.title}
-                width={getImageSize(type, image, "width")}
-                height={getImageSize(type, image, "height")}
-              />
-
               {isTransforming && (
                 <div className="transforming-loader">
                   <Image 
@@ -140,7 +147,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
                 </div>
               )}
             </div>
-          ): (
+          ) : (
             <div className="transformed-placeholder">
               Transformed Image
             </div>

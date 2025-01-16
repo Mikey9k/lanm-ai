@@ -49,7 +49,7 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
 
     const [isTransforming, setIsTransforming] = useState(false)
     const [quote, setQuote] = useState('')
-    const [activePerspective, setActivePerspective] = useState('')
+    const [activePerspective, setActivePerspective] = useState('booty')
     const [activeTone, setActiveTone] = useState('balance')
     const [activeStyle, setActiveStyle] = useState('sketch')
     const [activeTemplate, setActiveTemplate] = useState(1)
@@ -58,7 +58,6 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
 
     const [showSummary, setShowSummary] = useState(false)
 
-    const [resetCanvas, setResetCanvas] = useState(false)
 
     const [perspectives, setPerspectives] = useState([
         { id: '1', label: 'Discipline as the Key Connector' },
@@ -94,6 +93,7 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
     });
 
     // console.log(payload);
+    console.log(setActivePerspective);
     
 
 
@@ -132,7 +132,8 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
     }, [generatingTheme, quote, generateTheme])
 
     // 2) The function that calls your back end to generate images (and text/model, too)
-    const generateImage = useCallback(async () => {
+    const generateImage = useCallback(async (newPerspective?: string) => {
+
         console.log("Generating Images...");
         if (!quote) return
 
@@ -182,10 +183,16 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
 
 
         try {
+
+            // await delay(3000)
+            console.log(`active perspective: ${activePerspective}`)
+
             const newVersion = await updateVersion(userId);
             if (newVersion !== undefined) {
                 setVersion(newVersion);
             }
+            console.log(`Version: ${version}`);
+            console.log(`New Version: ${newVersion}`);
             updateCredits(userId, creditFee)
             console.log(creditBalance)
             const response = await fetch('http://localhost:3333/api/v1/dalle', {
@@ -196,17 +203,21 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
                 body: JSON.stringify({ 
                 prompt: quote,
                 // If you have more fields, pass them along below:
-                theme: activePerspective,
+                theme: newPerspective,
                 color: "black",
                 formality: activeTone,
                 style: activeStyle,
                 isQuoteDisplayed: true,
                 isSummaryDisplayed: true,
                 userId,
-                version,
+                version: newVersion,
                 }),  
             })
             const data = await response.json()
+
+            
+
+            // setImageLink(data.photo);
 
             /*
                 Instead of manually setting every single field in state,
@@ -242,17 +253,16 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
             console.error('Error generating images:', error);
         } finally {
             setIsTransforming(false)
-            setResetCanvas(true)
         }
     }, [quote, templates, activePerspective, activeStyle, activeTone, creditBalance, data, image, router, userId, version])
 
 
     const { toast } = useToast()
 
-    const handlePerspectiveChange = (newPerspective: string) => {
-        setActivePerspective(newPerspective);
+    const handlePerspectiveChange = async (newPerspective: string) => {
+        // setActivePerspective(newPerspective);
         setIsTransforming(true);
-        console.log("Perspective Changed");
+        console.log(`Perspective Changed: ${newPerspective}`);
         toast({
             title: "Perspective Changed",
             description: "1 credit used, generating new image...",
@@ -279,12 +289,12 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
 
         console.log(payload);
 
-        generateImage();
+        generateImage(newPerspective);
         
 
     };
 
-
+    console.log(`check version ${version}`)
 
     return (
 
@@ -301,9 +311,10 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
                 />
 
                 <PerspectiveSelector
-                    activePerspective={activePerspective}
-                    setActivePerspective={handlePerspectiveChange}
+                    // activePerspective={activePerspective}
+                    // setActivePerspective={setActivePerspective}
                     perspectives={perspectives}
+                    handlePerspectiveChange={handlePerspectiveChange}
                 />
 
                 <ToneSelector
@@ -340,12 +351,10 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
                             console.log("Reloading canvas...")
                         }}
                         type="defaultType" // Replace "defaultType" with the appropriate type value
-                        image={{ width: 800, height: 800, publicId: `${userId}_v${version}`, title: "Sample Title" }}
+                        image={{ width: 800, height: 800, publicId: `https://res.cloudinary.com/dxzrkqjex/image/upload/v1737018220/${userId}_v${version}`, title: "Sample Title" }}
                         title={"hello"}
                         isTransforming={isTransforming}
                         setIsTransforming={setIsTransforming}
-                        resetCanvas={resetCanvas}
-                        setResetCanvas={setResetCanvas}
                     />
                     <ImageButtons 
                         activeTemplate={activeTemplate}

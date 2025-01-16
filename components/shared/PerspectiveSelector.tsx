@@ -1,5 +1,5 @@
-import React from 'react'
-import { Button } from '@/components/ui/button'
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface Perspective {
   id: string;
@@ -7,12 +7,13 @@ interface Perspective {
 }
 
 interface PerspectiveSelectorProps {
-  activePerspective: string;
-  setActivePerspective: (perspective: string) => void;
   perspectives: Perspective[];
+  handlePerspectiveChange: (newPerspective: string) => Promise<void>;
 }
 
-const PerspectiveSelector: React.FC<PerspectiveSelectorProps> = ({ activePerspective, setActivePerspective, perspectives }) => {
+const PerspectiveSelector: React.FC<PerspectiveSelectorProps> = ({ perspectives, handlePerspectiveChange }) => {
+  const [selectedPerspective, setSelectedPerspective] = useState<string | null>(null);
+
   return (
     <div className="space-y-2">
       <h2 className="font-semibold mb-0">Perspective</h2>
@@ -21,15 +22,19 @@ const PerspectiveSelector: React.FC<PerspectiveSelectorProps> = ({ activePerspec
         {perspectives.map((p) => (
           <Button
             key={p.id}
-            variant={p.label === activePerspective ? 'default' : 'secondary'}
-            onClick={() => setActivePerspective(p.label)}
+            variant={p.label === selectedPerspective ? 'default' : 'secondary'}
+            onClick={() => {
+              setSelectedPerspective(p.label);
+              handlePerspectiveChange(p.label);
+              console.log(``)
+            }}
           >
             {p.label}
           </Button>
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PerspectiveSelector
+export default PerspectiveSelector;
