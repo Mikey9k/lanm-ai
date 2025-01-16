@@ -8,7 +8,7 @@ import StyleSelector from '@/components/shared/StyleSelector'
 import ToneSelector from '@/components/shared/ToneSelector'
 import ImageButtons from '@/components/shared/ImageButtons'
 import { Card } from '@/components/ui/card'
-import { updateCredits } from '@/lib/actions/user.actions'
+import { updateCredits, updateVersion } from '@/lib/actions/user.actions'
 import { creditFee } from '@/constants'
 import { useToast } from '@/hooks/use-toast'
 import { IImage } from '@/lib/database/models/image.model'
@@ -58,6 +58,8 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
 
     const [showSummary, setShowSummary] = useState(false)
 
+    const [resetCanvas, setResetCanvas] = useState(false)
+
     const [perspectives, setPerspectives] = useState([
         { id: '1', label: 'Discipline as the Key Connector' },
         { id: '2', label: 'Goals vs. Accomplishments' },
@@ -70,6 +72,9 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
 
 
     const [image, setImage] = useState(data)
+    const [version, setVersion] = useState(0)
+
+
     const router = useRouter()
 
     const [payload, setPayload] = useState({
@@ -177,6 +182,8 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
 
 
         try {
+            const newVersion = await updateVersion(userId);
+            setVersion(newVersion);
             updateCredits(userId, creditFee)
             console.log(creditBalance)
             const response = await fetch('http://localhost:3333/api/v1/dalle', {
@@ -194,6 +201,7 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
                 isQuoteDisplayed: true,
                 isSummaryDisplayed: true,
                 userId,
+                version,
                 }),  
             })
             const data = await response.json()
@@ -232,8 +240,9 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
             console.error('Error generating images:', error);
         } finally {
             setIsTransforming(false)
+            setResetCanvas(true)
         }
-    }, [quote, templates, activePerspective, activeStyle, activeTone, creditBalance, data, image, router, userId])
+    }, [quote, templates, activePerspective, activeStyle, activeTone, creditBalance, data, image, router, userId, version])
 
 
     const { toast } = useToast()
@@ -329,10 +338,12 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
                             console.log("Reloading canvas...")
                         }}
                         type="defaultType" // Replace "defaultType" with the appropriate type value
-                        image={{ width: 800, height: 800, publicId: userId, title: "Sample Title" }}
+                        image={{ width: 800, height: 800, publicId: `${userId}_v${version}`, title: "Sample Title" }}
                         title={"hello"}
                         isTransforming={isTransforming}
                         setIsTransforming={setIsTransforming}
+                        resetCanvas={resetCanvas}
+                        setResetCanvas={setResetCanvas}
                     />
                     <ImageButtons 
                         activeTemplate={activeTemplate}

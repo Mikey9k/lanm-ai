@@ -91,3 +91,22 @@ export async function updateCredits(userId: string, creditFee: number) {
     handleError(error);
   }
 }
+
+// USE VERSION
+export async function updateVersion(userId: string) {
+  try {
+    await connectToDatabase();
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: userId },
+      { $inc: { versionImg: 1 } },
+      { new: true }
+    );
+
+    if (!updatedUser) throw new Error("User version update failed");
+
+    return updatedUser.versionImg;
+  } catch (error) {
+    handleError(error);
+  }
+}

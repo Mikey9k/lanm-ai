@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { dataUrl, debounce, download, getImageSize } from '@/lib/utils'
 import { CldImage, getCldImageUrl } from 'next-cloudinary'
 import { PlaceholderValue } from 'next/dist/shared/lib/get-img-props'
+import { Card } from '@/components/ui/card'
 
 
 
@@ -32,6 +33,8 @@ interface DrawingCanvasProps {
   isTransforming?: boolean
   setIsTransforming?: (value: boolean) => void
   hasDownload?: boolean
+  resetCanvas?: boolean
+  setResetCanvas?: (value: boolean) => void
 }
 
 const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
@@ -44,7 +47,9 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   type,
   isTransforming,
   setIsTransforming,
-  hasDownload = false
+  hasDownload = false,
+  resetCanvas,
+  setResetCanvas
 }) => {
   // Fallback reload logic if no custom handler is passed
   const handleReload = () => {
@@ -69,7 +74,13 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
     }), title)
   }
 
-  console.log(hasDownload)
+  console.log(`yomumma: ${resetCanvas}`)
+  const newKey = resetCanvas ? Date.now() : 'default-key';
+  console.log(`newKey: ${newKey}`)
+  console.log(`publicId: ${image?.publicId}`)
+  console.log(`hasDownload: ${hasDownload}`)
+  console.log(`setResetCanvas: ${setResetCanvas}`)
+
 
   return (
 
@@ -88,6 +99,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
           {image?.publicId ? (
             <div className="relative">
               <CldImage 
+                key={`${newKey}-${image?.publicId}`}
                 width={getImageSize(type, image, "width")}
                 height={getImageSize(type, image, "height")}
                 src={image?.publicId}
@@ -107,6 +119,13 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
                     }
                   }, 8000)()
                 }}
+              />
+
+              <CldImage
+                src={image?.publicId}
+                alt={image.title}
+                width={getImageSize(type, image, "width")}
+                height={getImageSize(type, image, "height")}
               />
 
               {isTransforming && (
@@ -131,10 +150,12 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
         {/* Bottom-left controls container */}
         <div className="bottom-left-switch flex items-center space-x-2 p-4">
 
-          <Button>
-            <Switch checked={showSummary} onCheckedChange={setShowSummary} />
-            <Label htmlFor="display-quote">Display Quote</Label>
-          </Button>
+        <Card className="flex items-center space-x-4 p-2 shadow-md rounded-md">
+          <Switch checked={showSummary} onCheckedChange={setShowSummary} />
+          <Label htmlFor="display-quote" className="text-sm font-medium">
+            Display Quote
+          </Label>
+        </Card>
 
           {/* <span className="switch-label">Summary</span> */}
         </div>
