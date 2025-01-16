@@ -34,8 +34,18 @@ const UserSchema = new Schema({
     type: Number,
     default: 1110,
   },
+  versionImg: {
+    type: Number,
+    default: 0,
+  },
 });
 
-const User = models?.User || model("User", UserSchema);
+// If a model with the same name is already registered,
+// delete it from the Mongoose registry to force a new schema compilation.
+if (models.User) {
+  delete models.User;
+}
+
+const User = model("User", UserSchema);
 
 export default User;

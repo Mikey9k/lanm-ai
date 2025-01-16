@@ -183,7 +183,9 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
 
         try {
             const newVersion = await updateVersion(userId);
-            setVersion(newVersion);
+            if (newVersion !== undefined) {
+                setVersion(newVersion);
+            }
             updateCredits(userId, creditFee)
             console.log(creditBalance)
             const response = await fetch('http://localhost:3333/api/v1/dalle', {
