@@ -59,7 +59,7 @@ const NavBar = () => {
         <div className="space-x-2 hidden md:flex items-center gap-6">
             <SignedIn>
                 <ul className="navbar-nav_elements">
-                    {navLinks.slice(6).map((link) => {
+                    {/* {navLinks.slice(6).map((link) => {
                         const isActive = link.route === pathname
 
                         return (
@@ -78,7 +78,7 @@ const NavBar = () => {
                             </Link>
                         </li>
                         )
-                    })}
+                    })} */}
 
                     <li className="flex-center cursor-pointer gap-2 p-4">
                         <UserButton afterSignOutUrl='/' showName />

@@ -6,9 +6,12 @@ const tones = ['Balance', 'Formal', 'Informal']
 interface ToneSelectorProps {
   activeTone: string;
   setActiveTone: (tone: string) => void;
+  handleToneChange: (newTone: string) => Promise<void>;
+
+
 }
 
-const ToneSelector: React.FC<ToneSelectorProps> = ({ activeTone, setActiveTone }) => {
+const ToneSelector: React.FC<ToneSelectorProps> = ({ activeTone, setActiveTone, handleToneChange }) => {
   return (
     <div className="space-y-2">
       <h3 className="font-semibold">Tone</h3>
@@ -17,7 +20,10 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({ activeTone, setActiveTone }
           <Button
             key={index}
             variant={tone.toLowerCase() === activeTone ? 'default' : 'secondary'}
-            onClick={() => setActiveTone(tone.toLowerCase())}
+            onClick={() => {
+              setActiveTone(tone.toLowerCase())
+              handleToneChange(tone.toLowerCase())
+            }}
           >
             {tone}
           </Button>

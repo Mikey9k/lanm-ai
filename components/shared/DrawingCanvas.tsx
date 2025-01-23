@@ -8,6 +8,8 @@ import { CldImage, getCldImageUrl } from 'next-cloudinary'
 import { PlaceholderValue } from 'next/dist/shared/lib/get-img-props'
 import { Card } from '@/components/ui/card'
 
+import { useToast } from '@/hooks/use-toast'
+
 
 
 interface DrawingCanvasProps {
@@ -55,6 +57,19 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
       window.location.reload()
     }
   }
+
+  const { toast } = useToast()
+
+
+  const handleSwitchChange = (value: boolean) => {
+    setShowSummary(value);
+    toast({
+        title: "Change made, please Reload!",
+        description: "Reload button is on the bottom right of the canvas.",
+        duration: 5000,
+        className: "success-toast",
+    })  
+  };
 
   const handleShare = () => {
     alert(`Share logic goes here! {isTransforming: ${isTransforming}}`)
@@ -158,7 +173,11 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
         <div className="bottom-left-switch flex items-center space-x-2 p-4">
 
         <Card className="flex items-center space-x-4 p-2 shadow-md rounded-md">
-          <Switch checked={showSummary} onCheckedChange={setShowSummary} />
+          <Switch
+            checked={showSummary}
+            onCheckedChange={handleSwitchChange}
+
+          />
           <Label htmlFor="display-quote" className="text-sm font-medium">
             Display Quote
           </Label>

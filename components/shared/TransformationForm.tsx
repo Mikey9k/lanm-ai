@@ -51,8 +51,8 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
     const [quote, setQuote] = useState('')
     const [activePerspective, setActivePerspective] = useState('booty')
     const [activeTone, setActiveTone] = useState('balance')
-    const [activeStyle, setActiveStyle] = useState('sketch')
-    const [activeTemplate, setActiveTemplate] = useState(1)
+    const [activeStyle, setActiveStyle] = useState(0)
+    const [activeTemplate, setActiveTemplate] = useState('bridge')
 
     const [generatingTheme, setGeneratingTheme] = useState(false)
 
@@ -104,7 +104,7 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
         if (quote) {
         try {
             setGeneratingTheme(true);
-            const response = await fetch('http://localhost:3333/api/v1/dalle/theme', {
+            const response = await fetch('https://blueberry-o7gs.onrender.com/api/v1/dalle/theme', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -132,135 +132,85 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
     }, [generatingTheme, quote, generateTheme])
 
     // 2) The function that calls your back end to generate images (and text/model, too)
-    const generateImage = useCallback(async (newPerspective?: string) => {
-
-        console.log("Generating Images...");
-        if (!quote) return
-
-
-        if(data || image) {
-            const transformationUrl = getCldImageUrl({
-              width: image?.width,
-              height: image?.height,
-              src: image?.publicId || '',
-            })
-            
-      
-            const imageData = {
-              title: image?.title || '',
-              publicId: image?.publicId || '',
-              width: image?.width || 0,
-              height: image?.height || 0,
-              secureURL: image?.secureURL || '',
-              transformationURL: transformationUrl,
-            //   aspectRatio: values.aspectRatio,
-            //   prompt: values.prompt,
-            //   color: values.color,
-            }
-
-            console.log(imageData);
-      
+    // Updated generateImage function to handle both new tone and new perspective
+    const generateImage = useCallback(
+        async (newPerspective?: string, newTone?: string) => {
+            console.log("Generating Images...");
+            if (!quote) return;
 
             try {
-                const newImage = await addImage({
-                    image: imageData,
-                    userId,
-                    path: '/'
-                })
-        
-                if(newImage) {
-                    // form.reset()
-                    setImage(data)
-                    router.push(`/transformations/${newImage._id}`)
+                console.log(`active perspective: ${activePerspective}`);
+                console.log(`active tone: ${activeTone}`);
+
+                const perspectiveToUse = newPerspective || activePerspective;
+                const toneToUse = newTone || activeTone;
+
+                const newVersion = await updateVersion(userId);
+                if (newVersion !== undefined) {
+                    setVersion(newVersion);
                 }
+                console.log(`Version: ${version}`);
+                console.log(`New Version: ${newVersion}`);
+
+                updateCredits(userId, creditFee);
+                console.log(creditBalance);
+
+                const response = await fetch('https://blueberry-o7gs.onrender.com/api/v1/dalle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        prompt: quote,
+                        theme: perspectiveToUse,
+                        color: "black",
+                        formality: toneToUse,
+                        style: activeStyle,
+                        isQuoteDisplayed: showSummary,
+                        isSummaryDisplayed: showSummary,
+                        userId,
+                        version: newVersion,
+                    }),  
+                });
+                const data = await response.json();
+
+                setTemplates({
+                    ...templates,
+                    bridge: {
+                        image: `data:image/jpeg;base64,${data.photo}`,
+                        text: data.textBridge,
+                        model: data.modelBridge,
+                    },
+                    braid: {
+                        image: `data:image/jpeg;base64,${data.braid}`,
+                        text: data.textBraid,
+                        model: data.modelBraid,
+                    },
+                    fish: {
+                        image: `data:image/jpeg;base64,${data.fish}`,
+                        text: data.textFish,
+                        model: data.modelFish,
+                    },
+                    newton: {
+                        image: `data:image/jpeg;base64,${data.newton}`,
+                        text: data.textNewton,
+                        model: data.modelNewton,
+                    },
+                });
+
             } catch (error) {
-                console.log(error);
+                console.error('Error generating images:', error);
+            } finally {
+                setIsTransforming(false);
             }
-
-        }
-
-
-
-
-        try {
-
-            // await delay(3000)
-            console.log(`active perspective: ${activePerspective}`)
-
-            const newVersion = await updateVersion(userId);
-            if (newVersion !== undefined) {
-                setVersion(newVersion);
-            }
-            console.log(`Version: ${version}`);
-            console.log(`New Version: ${newVersion}`);
-            updateCredits(userId, creditFee)
-            console.log(creditBalance)
-            const response = await fetch('http://localhost:3333/api/v1/dalle', {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                prompt: quote,
-                // If you have more fields, pass them along below:
-                theme: newPerspective,
-                color: "black",
-                formality: activeTone,
-                style: activeStyle,
-                isQuoteDisplayed: true,
-                isSummaryDisplayed: true,
-                userId,
-                version: newVersion,
-                }),  
-            })
-            const data = await response.json()
-
-            
-
-            // setImageLink(data.photo);
-
-            /*
-                Instead of manually setting every single field in state,
-                you can store them in a “templates” object keyed by template name.
-                That way, as you add more templates on the backend (like “bridge”, “braid”,
-                “fish”, “newton”, etc.), you simply update the object accordingly.
-            */
-            setTemplates({
-                ...templates,
-                bridge: {
-                image: `data:image/jpeg;base64,${data.photo}`,  // or data.bridge
-                text: data.textBridge,
-                model: data.modelBridge
-                },
-                braid: {
-                image: `data:image/jpeg;base64,${data.braid}`,
-                text: data.textBraid,
-                model: data.modelBraid
-                },
-                fish: {
-                image: `data:image/jpeg;base64,${data.fish}`,
-                text: data.textFish,
-                model: data.modelFish
-                },
-                newton: {
-                image: `data:image/jpeg;base64,${data.newton}`,
-                text: data.textNewton,
-                model: data.modelNewton
-                }
-            })
-
-        } catch (error) {
-            console.error('Error generating images:', error);
-        } finally {
-            setIsTransforming(false)
-        }
-    }, [quote, templates, activePerspective, activeStyle, activeTone, creditBalance, data, image, router, userId, version])
-
+        },
+        [quote, userId, activePerspective, activeTone, version, creditBalance, activeStyle, showSummary, templates]
+        );
 
     const { toast } = useToast()
 
     const handlePerspectiveChange = async (newPerspective: string) => {
-        // setActivePerspective(newPerspective);
+        setActivePerspective(newPerspective);
         setIsTransforming(true);
         console.log(`Perspective Changed: ${newPerspective}`);
         toast({
@@ -284,15 +234,57 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
             userId,
             textRating: 0,
             visualRating: 0,
-            comment: ''
+            comment: '',
         });
 
         console.log(payload);
 
-        generateImage(newPerspective);
+        generateImage(newPerspective, activeTone);
         
 
     };
+
+    const handleToneChange = async (newTone: string) => {
+        setActiveTone(newTone);
+        setIsTransforming(true);
+        console.log(`Tone Changed: ${newTone}`);
+        toast({
+            title: "Tone Changed",
+            description: "1 credit used, generating new image...",
+            duration: 5000,
+            className: "success-toast",
+        });
+    
+        setPayload({
+            ...payload,
+            quote: quote,
+            theme: activePerspective,
+            color: 'black',
+            formality: newTone,
+            style: activeStyle,
+            isQuoteDisplayed: true,
+            isSummaryDisplayed: true,
+            activeTemplate,
+            showSummary,
+            userId,
+            textRating: 0,
+            visualRating: 0,
+            comment: '',
+        });
+    
+        console.log(payload);
+    
+        generateImage(activePerspective, newTone);
+    };
+
+    useEffect(() => {
+        toast({
+            title: "Change made, please Reload!",
+            description: "Reload button is on the bottom right of the canvas.",
+            duration: 5000,
+            className: "success-toast",
+        })  
+    }, [activeTone, toast]);
 
     console.log(`check version ${version}`)
 
@@ -320,6 +312,8 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
                 <ToneSelector
                     activeTone={activeTone}
                     setActiveTone={setActiveTone}
+                    handleToneChange={handleToneChange}
+
                 />
 
                 <StyleSelector
@@ -349,9 +343,10 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
                         onReload={() => {
                             // Custom logic, e.g., clearing canvas, re-initializing data, etc.
                             console.log("Reloading canvas...")
+                            handlePerspectiveChange(activePerspective)
                         }}
                         type="defaultType" // Replace "defaultType" with the appropriate type value
-                        image={{ width: 800, height: 800, publicId: `https://res.cloudinary.com/dxzrkqjex/image/upload/v1737018220/${userId}_v${version}`, title: "Sample Title" }}
+                        image={{ width: 800, height: 800, publicId: `https://res.cloudinary.com/dxzrkqjex/image/upload/v1737018220/${userId}_v${version}_${activeTemplate}-${activeStyle}.png`, title: "Sample Title" }}
                         title={"hello"}
                         isTransforming={isTransforming}
                         setIsTransforming={setIsTransforming}
