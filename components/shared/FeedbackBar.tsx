@@ -10,27 +10,19 @@ import { useToast } from '@/hooks/use-toast'
 interface FeedbackBarProps {
 
   payload: {
-
     quote: string;
-
     theme: string;
-
     color: string;
-
     formality: string;
-
-    style: string;
-
+    style: number; // Changed from string to number
     isQuoteDisplayed: boolean;
-
     isSummaryDisplayed: boolean;
-
-    activeTemplate: number;
-
+    activeTemplate: string; // Changed from number to string
     showSummary: boolean;
-
     userId: string;
-
+    textRating: number;
+    visualRating: number;
+    comment: string;
   };
 
 }

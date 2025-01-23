@@ -11,10 +11,10 @@ import { Card } from '@/components/ui/card'
 import { updateCredits, updateVersion } from '@/lib/actions/user.actions'
 import { creditFee } from '@/constants'
 import { useToast } from '@/hooks/use-toast'
-import { IImage } from '@/lib/database/models/image.model'
-import { getCldImageUrl } from 'next-cloudinary'
-import { addImage } from "@/lib/actions/image.actions"
-import { useRouter } from "next/navigation"
+// import { IImage } from '@/lib/database/models/image.model'
+// import { getCldImageUrl } from 'next-cloudinary'
+// import { addImage } from "@/lib/actions/image.actions"
+// import { useRouter } from "next/navigation"
 import FeedbackBar from './FeedbackBar'
 
 
@@ -38,10 +38,10 @@ interface Templates {
 interface TransformationFormProps {
     userId: string;
     creditBalance: number;
-    data?: IImage | null;   
+    // data?: IImage | null;   
 }
 
-const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditBalance, data = null }) => {
+const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditBalance }) => {
 
     console.log(userId + " is the user id");
 
@@ -70,11 +70,11 @@ const TransformationForm: React.FC<TransformationFormProps> = ({ userId, creditB
     const [templates, setTemplates] = useState<Templates>({})
 
 
-    const [image, setImage] = useState(data)
+    // const [image, setImage] = useState(data)
     const [version, setVersion] = useState(0)
 
 
-    const router = useRouter()
+    // const router = useRouter()
 
     const [payload, setPayload] = useState({
         quote: quote,
